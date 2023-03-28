@@ -38,7 +38,7 @@ public abstract class AbstractPartitionedLimiter<ContextT> extends AbstractLimit
     private static final String PARTITION_TAG_NAME = "partition";
 
     public abstract static class Builder<BuilderT extends AbstractLimiter.Builder<BuilderT>, ContextT> extends AbstractLimiter.Builder<BuilderT> {
-        private List<Function<ContextT, String>> partitionResolvers = new ArrayList<>();
+        private final List<Function<ContextT, String>> partitionResolvers = new ArrayList<>();
         private final Map<String, Partition> partitions = new LinkedHashMap<>();
         private int maxDelayedThreads = 100;
 
@@ -107,9 +107,9 @@ public abstract class AbstractPartitionedLimiter<ContextT> extends AbstractLimit
         private final String name;
 
         private double percent = 0.0;
-        private int limit = 0;
-        private int busy = 0;
-        private long backoffMillis = 0;
+        private int limit;
+        private int busy;
+        private long backoffMillis;
         private MetricRegistry.SampleListener inflightDistribution;
 
         Partition(String name) {
@@ -253,8 +253,9 @@ public abstract class AbstractPartitionedLimiter<ContextT> extends AbstractLimit
                 }
             });
         } finally {
-            if (lock.isHeldByCurrentThread())
+            if (lock.isHeldByCurrentThread()) {
                 lock.unlock();
+            }
         }
     }
 

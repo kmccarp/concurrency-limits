@@ -26,7 +26,6 @@ import com.netflix.concurrency.limits.limiter.SimpleLimiter;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -75,13 +74,10 @@ public final class BlockingAdaptiveExecutor implements Executor {
             }
 
             if (executor == null) {
-                executor = Executors.newCachedThreadPool(new ThreadFactory() {
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread thread = new Thread(r);
-                        thread.setDaemon(true);
-                        return thread;
-                    }
+                executor = Executors.newCachedThreadPool(r -> {
+                    Thread thread = new Thread(r);
+                    thread.setDaemon(true);
+                    return thread;
                 });
             }
 

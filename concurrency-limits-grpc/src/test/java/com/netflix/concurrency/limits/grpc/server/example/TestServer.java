@@ -31,7 +31,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestServer {
+public final class TestServer {
     private static final Logger LOG = LoggerFactory.getLogger(TestServer.class);
 
     public static final MethodDescriptor<String, String> METHOD_DESCRIPTOR = MethodDescriptor.<String, String>newBuilder()
@@ -52,7 +52,7 @@ public class TestServer {
     }
     
     public static class Builder {
-        private List<TestServer.Segment> segments = new ArrayList<>();
+        private final List<TestServer.Segment> segments = new ArrayList<>();
         private int concurrency = 2;
         private Limiter<GrpcServerRequestContext> limiter;
         
