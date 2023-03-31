@@ -34,12 +34,12 @@ public class Driver {
         String name();
     }
     
-    static public Builder newBuilder() {
+    public static Builder newBuilder() {
         return new Builder();
     }
     
     public static class Builder {
-        private List<Driver.Segment> segments = new ArrayList<>();
+        private final List<Driver.Segment> segments = new ArrayList<>();
         private int port;
         private long runtimeSeconds;
         private Consumer<Long> latencyAccumulator;
