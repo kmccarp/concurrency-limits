@@ -211,8 +211,8 @@ public class LifoBlockingLimiterTest {
         }
     }
 
-    private List<Optional<Limiter.Listener>> acquireN(Limiter<Void> limiter, int N) {
-        return IntStream.range(0, N)
+    private List<Optional<Limiter.Listener>> acquireN(Limiter<Void> limiter, int n) {
+        return IntStream.range(0, n)
                 .mapToObj(i -> limiter.acquire(null))
                 .peek(listener -> Assert.assertTrue(listener.isPresent()))
                 .collect(Collectors.toList());

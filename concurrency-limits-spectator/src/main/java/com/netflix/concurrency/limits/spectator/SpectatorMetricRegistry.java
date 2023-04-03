@@ -53,7 +53,7 @@ public final class SpectatorMetricRegistry implements MetricRegistry {
     public Counter counter(String id, String... tagNameValuePairs) {
         Id metricId = suffixBaseId(id).withTags(tagNameValuePairs);
         com.netflix.spectator.api.Counter spectatorCounter = registry.counter(metricId);
-        return () -> spectatorCounter.increment();
+        return spectatorCounter::increment;
     }
 
     private Id suffixBaseId(String suffix) {
