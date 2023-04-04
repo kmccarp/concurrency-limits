@@ -73,6 +73,7 @@ public class SimpleLimiter<ContextT> extends AbstractLimiter<ContextT> {
      * Simple Semaphore subclass that allows access to its reducePermits method.
      */
     private static final class AdjustableSemaphore extends Semaphore {
+        private static final long serialVersionUID = 1;
         AdjustableSemaphore(int permits) {
             super(permits);
         }
