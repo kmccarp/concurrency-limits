@@ -51,12 +51,12 @@ public class ConcurrencyLimitServerInterceptor implements ServerInterceptor {
         private Supplier<Status> statusSupplier = () -> LIMIT_EXCEEDED_STATUS;
         private Supplier<Metadata> trailerSupplier = Metadata::new;
         private final Limiter<GrpcServerRequestContext> grpcLimiter;
-        
+
         public Builder(Limiter<GrpcServerRequestContext> grpcLimiter) {
             Preconditions.checkArgument(grpcLimiter != null, "grpcLimiter cannot be null");
             this.grpcLimiter = grpcLimiter;
         }
-        
+
         /**
          * Supplier for the Status code to return when the concurrency limit has been reached.
          * A custom supplier could augment the response to include additional information about
@@ -71,7 +71,7 @@ public class ConcurrencyLimitServerInterceptor implements ServerInterceptor {
             this.statusSupplier = supplier;
             return this;
         }
-        
+
         /**
          * Supplier for the Metadata to return when the concurrency limit has been reached.
          * A custom supplier may include additional metadata about the server or limit
@@ -84,16 +84,16 @@ public class ConcurrencyLimitServerInterceptor implements ServerInterceptor {
             this.trailerSupplier = supplier;
             return this;
         }
-        
+
         public ConcurrencyLimitServerInterceptor build() {
             return new ConcurrencyLimitServerInterceptor(this);
         }
     }
-    
+
     public static Builder newBuilder(Limiter<GrpcServerRequestContext> grpcLimiter) {
         return new Builder(grpcLimiter);
     }
-    
+
     /**
      * @deprecated Use {@link ConcurrencyLimitServerInterceptor#newBuilder(Limiter)}
      * @param grpcLimiter
@@ -105,7 +105,7 @@ public class ConcurrencyLimitServerInterceptor implements ServerInterceptor {
         this.statusSupplier = () -> LIMIT_EXCEEDED_STATUS;
         this.trailerSupplier = Metadata::new;
     }
-    
+
     private ConcurrencyLimitServerInterceptor(Builder builder) {
         this.grpcLimiter = builder.grpcLimiter;
         this.statusSupplier = builder.statusSupplier;
@@ -114,109 +114,110 @@ public class ConcurrencyLimitServerInterceptor implements ServerInterceptor {
 
     @Override
     public <ReqT, RespT> Listener<ReqT> interceptCall(final ServerCall<ReqT, RespT> call,
-                                                      final Metadata headers,
-                                                      final ServerCallHandler<ReqT, RespT> next) {
+            final Metadata headers,
+            final ServerCallHandler<ReqT, RespT> next) {
 
         if (!call.getMethodDescriptor().getType().serverSendsOneMessage() || !call.getMethodDescriptor().getType().clientSendsOneMessage()) {
             return next.startCall(call, headers);
         }
 
         return grpcLimiter
-            .acquire(new GrpcServerRequestContext() {
-                @Override
-                public ServerCall<?, ?> getCall() {
-                    return call;
-                }
+                .acquire(new GrpcServerRequestContext() {
+                    @Override
+                    public ServerCall<?, ?> getCall() {
+                        return call;
+                    }
 
-                @Override
-                public Metadata getHeaders() {
-                    return headers;
-                }
-            })
-            .map(new Function<Limiter.Listener, Listener<ReqT>>() {
-                final AtomicBoolean done = new AtomicBoolean(false);
+                    @Override
+                    public Metadata getHeaders() {
+                        return headers;
+                    }
+                })
+                .map(new Function<Limiter.Listener, Listener<ReqT>>() {
+                    final AtomicBoolean done = new AtomicBoolean(false);
 
-                void safeComplete(Runnable action) {
-                    if (done.compareAndSet(false, true)) {
+                    void safeComplete(Runnable action) {
+                        if (done.compareAndSet(false, true)) {
+                            try {
+                                action.run();
+                            } catch (Throwable t) {
+                                LOG.error("Critical error releasing limit", t);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public Listener<ReqT> apply(Limiter.Listener listener) {
+                        final Listener<ReqT> delegate;
+
                         try {
-                            action.run();
-                        } catch (Throwable t) {
-                            LOG.error("Critical error releasing limit", t);
-                        }
-                    }
-                }
-
-                @Override
-                public Listener<ReqT> apply(Limiter.Listener listener) {
-                    final Listener<ReqT> delegate;
-
-                    try {
-                        delegate = next.startCall(
-                                new ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(call) {
-                                    @Override
-                                    public void close(Status status, Metadata trailers) {
-                                        try {
-                                            super.close(status, trailers);
-                                        } finally {
-                                            safeComplete(() -> {
-                                                switch (status.getCode()) {
-                                                    case DEADLINE_EXCEEDED:
-                                                        listener.onDropped();
-                                                        break;
-                                                    default:
-                                                        listener.onSuccess();
-                                                        break;
-                                                }
-                                            });
+                            delegate = next.startCall(
+                                    new ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(call) {
+                                        @Override
+                                        public void close(Status status, Metadata trailers) {
+                                            try {
+                                                super.close(status, trailers);
+                                            } finally {
+                                                safeComplete(() -> {
+                                                    switch (status.getCode()) {
+                                                        case DEADLINE_EXCEEDED:
+                                                            listener.onDropped();
+                                                            break;
+                                                        default:
+                                                            listener.onSuccess();
+                                                            break;
+                                                    }
+                                                });
+                                            }
                                         }
-                                    }
-                                },
-                                headers);
-                    } catch (Exception e) {
-                        LOG.warn("Failed to create call", e);
-                        safeComplete(listener::onIgnore);
-                        throw e;
+                                    },
+                                    headers);
+                        } catch (Exception e) {
+                            LOG.warn("Failed to create call", e);
+                            safeComplete(listener::onIgnore);
+                            throw e;
+                        }
+
+                        return new ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(delegate) {
+
+                            @Override
+                            public void onMessage(ReqT message) {
+                                try {
+                                    super.onMessage(message);
+                                } catch (Throwable t) {
+                                    LOG.error("Uncaught exception. Force releasing limit. ", t);
+                                    safeComplete(listener::onIgnore);
+                                    throw t;
+                                }
+                            }
+
+                            @Override
+                            public void onHalfClose() {
+                                try {
+                                    super.onHalfClose();
+                                } catch (Throwable t) {
+                                    LOG.error("Uncaught exception. Force releasing limit. ", t);
+                                    safeComplete(listener::onIgnore);
+                                    throw t;
+                                }
+                            }
+
+                            @Override
+                            public void onCancel() {
+                                try {
+                                    super.onCancel();
+                                } finally {
+                                    safeComplete(listener::onDropped);
+                                }
+                            }
+
+                        };
                     }
-
-                    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT>(delegate) {
-
-                        @Override
-                        public void onMessage(ReqT message) {
-                            try {
-                                super.onMessage(message);
-                            } catch (Throwable t) {
-                                LOG.error("Uncaught exception. Force releasing limit. ", t);
-                                safeComplete(listener::onIgnore);
-                                throw t;
-                            }
-                        }
-
-                        @Override
-                        public void onHalfClose() {
-                            try {
-                                super.onHalfClose();
-                            } catch (Throwable t) {
-                                LOG.error("Uncaught exception. Force releasing limit. ", t);
-                                safeComplete(listener::onIgnore);
-                                throw t;
-                            }
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            try {
-                                super.onCancel();
-                            } finally {
-                                safeComplete(listener::onDropped);
-                            }
-                        }
-
+                })
+                .orElseGet(() -> {
+                    call.close(statusSupplier.get(), trailerSupplier.get());
+                    return new ServerCall.Listener<ReqT>() {
                     };
-                }
-            })
-            .orElseGet(() -> {
-                call.close(statusSupplier.get(), trailerSupplier.get());
-                return new ServerCall.Listener<ReqT>() {};
-            });
+                });
     }
 }

@@ -21,12 +21,14 @@ import java.util.function.Supplier;
 
 public final class EmptyMetricRegistry implements MetricRegistry {
     public static final EmptyMetricRegistry INSTANCE = new EmptyMetricRegistry();
-    
-    private EmptyMetricRegistry() {}
-    
+
+    private EmptyMetricRegistry() {
+    }
+
     @Override
     public SampleListener distribution(String id, String... tagNameValuePairs) {
-        return value -> { };
+        return value -> {
+        };
     }
 
     @Override

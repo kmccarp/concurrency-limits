@@ -27,5 +27,6 @@ public final class MetricIds {
     public static final String WINDOW_MIN_RTT_NAME = "min_window_rtt";
     public static final String WINDOW_QUEUE_SIZE_NAME = "queue_size";
 
-    private MetricIds() {}
+    private MetricIds() {
+    }
 }

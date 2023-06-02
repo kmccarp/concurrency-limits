@@ -24,13 +24,13 @@ import java.util.stream.IntStream;
  */
 public final class Log10RootFunction implements Function<Integer, Integer> {
     static final int[] lookup = new int[1000];
-    
+
     static {
         IntStream.range(0, 1000).forEach(i -> lookup[i] = Math.max(1, (int)Math.log10(i)));
     }
-    
+
     private static final Log10RootFunction INSTANCE = new Log10RootFunction();
-    
+
     /**
      * Create an instance of a function that returns : baseline + sqrt(limit)
      * 
@@ -40,7 +40,7 @@ public final class Log10RootFunction implements Function<Integer, Integer> {
     public static Function<Integer, Integer> create(int baseline) {
         return INSTANCE.andThen(t -> t + baseline);
     }
-    
+
     @Override
     public Integer apply(Integer t) {
         return t < 1000 ? lookup[t] : (int)Math.log10(t);

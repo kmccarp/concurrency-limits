@@ -57,7 +57,7 @@ public final class BlockingLimiter<ContextT> implements Limiter<ContextT> {
 
     private final Limiter<ContextT> delegate;
     private final Duration timeout;
-    
+
     /**
      * Lock used to block and unblock callers as the limit is reached
      */
@@ -67,7 +67,7 @@ public final class BlockingLimiter<ContextT> implements Limiter<ContextT> {
         this.delegate = limiter;
         this.timeout = timeout;
     }
-    
+
     private Optional<Listener> tryAcquire(ContextT context) {
         final Instant deadline = Instant.now().plus(timeout);
         synchronized (lock) {
@@ -81,7 +81,7 @@ public final class BlockingLimiter<ContextT> implements Limiter<ContextT> {
                 if (listener.isPresent()) {
                     return listener;
                 }
-                
+
                 // We have reached the limit so block until a token is released
                 try {
                     lock.wait(timeout);
@@ -92,13 +92,13 @@ public final class BlockingLimiter<ContextT> implements Limiter<ContextT> {
             }
         }
     }
-    
+
     private void unblock() {
         synchronized (lock) {
             lock.notifyAll();
         }
     }
-    
+
     @Override
     public Optional<Listener> acquire(ContextT context) {
         return tryAcquire(context).map(delegate -> new Listener() {
@@ -121,7 +121,7 @@ public final class BlockingLimiter<ContextT> implements Limiter<ContextT> {
             }
         });
     }
-    
+
     @Override
     public String toString() {
         return "BlockingLimiter [" + delegate + "]";

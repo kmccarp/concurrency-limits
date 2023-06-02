@@ -34,13 +34,13 @@ public interface Limiter<ContextT> {
          * used as an RTT sample
          */
         void onSuccess();
-        
+
         /**
          * The operation failed before any meaningful RTT measurement could be made and should
          * be ignored to not introduce an artificially low RTT
          */
         void onIgnore();
-        
+
         /**
          * The request failed and was dropped due to being rejected by an external limit or hitting
          * a timeout.  Loss based {@link Limit} implementations will likely do an aggressive

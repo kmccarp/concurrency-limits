@@ -35,7 +35,7 @@ public class GroupServletLimiterTest {
 
         HttpServletRequest request = createMockRequestWithPrincipal("bob");
         Optional<Listener> listener = limiter.acquire(request);
-        
+
         Assert.assertTrue(listener.isPresent());
         Mockito.verify(principalToGroup, Mockito.times(1)).get("bob");
     }
@@ -54,7 +54,7 @@ public class GroupServletLimiterTest {
 
         HttpServletRequest request = createMockRequestWithPrincipal("doesntexist");
         Optional<Listener> listener = limiter.acquire(request);
-        
+
         Assert.assertTrue(listener.isPresent());
         Mockito.verify(principalToGroup, Mockito.times(1)).get("doesntexist");
     }
@@ -74,10 +74,10 @@ public class GroupServletLimiterTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getUserPrincipal()).thenReturn(null);
 
-        Optional<Listener> listener =  limiter.acquire(request);
+        Optional<Listener> listener = limiter.acquire(request);
 
         Assert.assertTrue(listener.isPresent());
-        Mockito.verify(principalToGroup, Mockito.times(0)).get(Mockito.<String> any());
+        Mockito.verify(principalToGroup, Mockito.times(0)).get(Mockito.<String>any());
     }
 
     @Test
@@ -93,8 +93,8 @@ public class GroupServletLimiterTest {
                 .build();
 
         HttpServletRequest request = createMockRequestWithPrincipal(null);
-        Optional<Listener> listener =  limiter.acquire(request);
-        
+        Optional<Listener> listener = limiter.acquire(request);
+
         Assert.assertTrue(listener.isPresent());
         Mockito.verify(principalToGroup, Mockito.times(1)).get(ArgumentMatchers.isNull());
     }
@@ -153,7 +153,7 @@ public class GroupServletLimiterTest {
         Optional<Listener> listener = limiter.acquire(request);
 
         Assert.assertTrue(listener.isPresent());
-        Mockito.verify(pathToGroup, Mockito.times(0)).get(Mockito.<String> any());
+        Mockito.verify(pathToGroup, Mockito.times(0)).get(Mockito.<String>any());
     }
 
     private HttpServletRequest createMockRequestWithPrincipal(String name) {

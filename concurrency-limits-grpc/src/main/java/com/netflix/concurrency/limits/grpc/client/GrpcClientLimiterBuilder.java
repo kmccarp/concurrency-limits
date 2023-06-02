@@ -30,11 +30,11 @@ public final class GrpcClientLimiterBuilder extends AbstractPartitionedLimiter.B
     public GrpcClientLimiterBuilder partitionByMethod() {
         return partitionResolver(context -> context.getMethod().getFullMethodName());
     }
-    
+
     public GrpcClientLimiterBuilder partitionByCallOption(CallOptions.Key<String> option) {
         return partitionResolver(context -> context.getCallOptions().getOption(option));
     }
-    
+
     /**
      * When set to true new calls to the channel will block when the limit has been reached instead
      * of failing fast with an UNAVAILABLE status. 
@@ -45,12 +45,12 @@ public final class GrpcClientLimiterBuilder extends AbstractPartitionedLimiter.B
         this.blockOnLimit = blockOnLimit;
         return this;
     }
-    
+
     @Override
     protected GrpcClientLimiterBuilder self() {
         return this;
     }
-    
+
     public Limiter<GrpcClientRequestContext> build() {
         Limiter<GrpcClientRequestContext> limiter = super.build();
 

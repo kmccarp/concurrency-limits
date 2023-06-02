@@ -50,12 +50,12 @@ public class HttpServerRule extends ExternalResource {
     }
 
     public int getPort() {
-        return ((ServerConnector) server.getConnectors()[0]).getLocalPort();
+        return ((ServerConnector)server.getConnectors()[0]).getLocalPort();
     }
 
     public String get(String path) throws Exception {
         URL url = new URL("http://localhost:" + getPort() + path);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
         con.setRequestMethod("GET");
         int responseCode = con.getResponseCode();
         if (responseCode != 200) {

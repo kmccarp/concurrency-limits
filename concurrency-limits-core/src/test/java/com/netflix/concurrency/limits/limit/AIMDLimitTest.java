@@ -11,7 +11,7 @@ public class AIMDLimitTest {
         AIMDLimit limiter = AIMDLimit.newBuilder().initialLimit(10).build();
         Assert.assertEquals(10, limiter.getLimit());
     }
-    
+
     @Test
     public void increaseOnSuccess() {
         AIMDLimit limiter = AIMDLimit.newBuilder().initialLimit(20).build();

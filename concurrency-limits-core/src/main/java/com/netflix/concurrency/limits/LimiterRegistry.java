@@ -22,7 +22,7 @@ package com.netflix.concurrency.limits;
  */
 public interface LimiterRegistry<ContextT> {
     Limiter<ContextT> get(String key);
-    
+
     static <ContextT> LimiterRegistry<ContextT> single(Limiter<ContextT> limiter) {
         return key -> limiter;
     }

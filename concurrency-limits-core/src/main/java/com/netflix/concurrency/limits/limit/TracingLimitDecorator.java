@@ -24,17 +24,17 @@ import java.util.function.Consumer;
 
 public class TracingLimitDecorator implements Limit {
     private static final Logger LOG = LoggerFactory.getLogger(TracingLimitDecorator.class);
-    
+
     private final Limit delegate;
 
     public static TracingLimitDecorator wrap(Limit delegate) {
         return new TracingLimitDecorator(delegate);
     }
-    
+
     public TracingLimitDecorator(Limit delegate) {
         this.delegate = delegate;
     }
-    
+
     @Override
     public int getLimit() {
         return delegate.getLimit();

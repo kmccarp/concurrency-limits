@@ -43,11 +43,12 @@ public class ConcurrencyLimitServletFilter implements Filter {
     public ConcurrencyLimitServletFilter(Limiter<HttpServletRequest> limiter) {
         this(limiter, STATUS_TOO_MANY_REQUESTS);
     }
+
     public ConcurrencyLimitServletFilter(Limiter<HttpServletRequest> limiter, int throttleStatus) {
         this.limiter = limiter;
         this.throttleStatus = throttleStatus;
     }
-    
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -55,7 +56,7 @@ public class ConcurrencyLimitServletFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
+
         Optional<Limiter.Listener> listener = limiter.acquire((HttpServletRequest)request);
         if (listener.isPresent()) {
             try {
@@ -77,7 +78,7 @@ public class ConcurrencyLimitServletFilter implements Filter {
         } catch (IOException e) {
         }
     }
-    
+
     @Override
     public void destroy() {
     }

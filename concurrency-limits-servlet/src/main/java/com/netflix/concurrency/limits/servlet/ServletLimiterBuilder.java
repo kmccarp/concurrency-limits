@@ -36,7 +36,7 @@ public final class ServletLimiterBuilder extends AbstractPartitionedLimiter.Buil
     public ServletLimiterBuilder partitionByHeader(String name) {
         return partitionResolver(request -> Optional.ofNullable(request.getHeader(name)).orElse(null));
     }
-    
+
     /**
      * Partition the limit by {@link Principal}. Percentages of the limit are partitioned to named
      * groups.  Group membership is derived from the provided mapping function.
@@ -46,7 +46,7 @@ public final class ServletLimiterBuilder extends AbstractPartitionedLimiter.Buil
     public ServletLimiterBuilder partitionByUserPrincipal(Function<Principal, String> principalToGroup) {
         return partitionResolver(request -> Optional.ofNullable(request.getUserPrincipal()).map(principalToGroup).orElse(null));
     }
-    
+
     /**
      * Partition the limit by request attribute
      * @return Chainable builder
@@ -54,7 +54,7 @@ public final class ServletLimiterBuilder extends AbstractPartitionedLimiter.Buil
     public ServletLimiterBuilder partitionByAttribute(String name) {
         return partitionResolver(request -> Optional.ofNullable(request.getAttribute(name)).map(Object::toString).orElse(null));
     }
-    
+
     /**
      * Partition the limit by request parameter
      * @return Chainable builder
@@ -62,7 +62,7 @@ public final class ServletLimiterBuilder extends AbstractPartitionedLimiter.Buil
     public ServletLimiterBuilder partitionByParameter(String name) {
         return partitionResolver(request -> Optional.ofNullable(request.getParameter(name)).orElse(null));
     }
-    
+
     /**
      * Partition the limit by the full path. Percentages of the limit are partitioned to named
      * groups.  Group membership is derived from the provided mapping function.
@@ -72,7 +72,7 @@ public final class ServletLimiterBuilder extends AbstractPartitionedLimiter.Buil
     public ServletLimiterBuilder partitionByPathInfo(Function<String, String> pathToGroup) {
         return partitionResolver(request -> Optional.ofNullable(request.getPathInfo()).map(pathToGroup).orElse(null));
     }
-    
+
     @Override
     protected ServletLimiterBuilder self() {
         return this;

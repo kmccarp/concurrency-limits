@@ -41,7 +41,7 @@ public class ImmutablePercentileSampleWindowTest {
         window = window.addSample(bigRtt, 1, true);
         Assert.assertEquals(bigRtt, window.getTrackedRttNanos());
     }
-    
+
     @Test
     public void p999ReturnsSlowestObservedRtt() {
         SampleWindow window = new ImmutablePercentileSampleWindow(0.999, 10);

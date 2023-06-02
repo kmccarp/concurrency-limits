@@ -66,16 +66,16 @@ public final class AIMDLimit extends AbstractLimit {
             this.timeout = units.toNanos(timeout);
             return this;
         }
-        
+
         public AIMDLimit build() {
             return new AIMDLimit(this);
         }
     }
-    
+
     public static Builder newBuilder() {
         return new Builder();
     }
-    
+
     private final double backoffRatio;
     private final long timeout;
     private final int minLimit;
@@ -88,15 +88,15 @@ public final class AIMDLimit extends AbstractLimit {
         this.maxLimit = builder.maxLimit;
         this.minLimit = builder.minLimit;
     }
-    
+
     @Override
     protected int _update(long startTime, long rtt, int inflight, boolean didDrop) {
         int currentLimit = getLimit();
 
         if (didDrop || rtt > timeout) {
-            currentLimit = (int) (currentLimit * backoffRatio);
+            currentLimit = (int)(currentLimit * backoffRatio);
         } else if (inflight * 2 >= currentLimit) {
-            currentLimit =  currentLimit + 1;
+            currentLimit = currentLimit + 1;
         }
 
         return Math.min(maxLimit, Math.max(minLimit, currentLimit));

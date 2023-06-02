@@ -72,7 +72,7 @@ public interface MetricRegistry {
      */
     default void gauge(String id, Supplier<Number> supplier, String... tagNameValuePairs) {
         registerGauge(id, supplier, tagNameValuePairs);
-    };
+    }
 
     /**
      * Create a counter that will be increment when an event occurs.  Counters normally translate in an action
@@ -82,7 +82,8 @@ public interface MetricRegistry {
      * @param tagNameValuePairs
      */
     default Counter counter(String id, String... tagNameValuePairs) {
-        return () -> {};
+        return () -> {
+        };
     }
 
     /**

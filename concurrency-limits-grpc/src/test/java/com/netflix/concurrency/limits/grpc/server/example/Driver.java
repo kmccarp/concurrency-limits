@@ -30,14 +30,16 @@ public class Driver {
 
     private interface Segment {
         long duration();
+
         long nextDelay();
+
         String name();
     }
-    
+
     static public Builder newBuilder() {
         return new Builder();
     }
-    
+
     public static class Builder {
         private List<Driver.Segment> segments = new ArrayList<>();
         private int port;
@@ -49,21 +51,21 @@ public class Driver {
             final NormalDistribution distribution = new NormalDistribution(mean, sd);
             return add("normal(" + mean + ")", () -> (long)distribution.sample(), duration, units);
         }
-        
+
         public Builder uniform(double lower, double upper, long duration, TimeUnit units) {
             final UniformRealDistribution distribution = new UniformRealDistribution(lower, upper);
             return add("uniform(" + lower + "," + upper + ")", () -> (long)distribution.sample(), duration, units);
         }
-        
+
         public Builder exponential(double mean, long duration, TimeUnit units) {
             final ExponentialDistribution distribution = new ExponentialDistribution(mean);
             return add("exponential(" + mean + ")", () -> (long)distribution.sample(), duration, units);
         }
-        
+
         public Builder exponentialRps(double rps, long duration, TimeUnit units) {
             return exponential(1000.0 / rps, duration, units);
         }
-        
+
         public Builder slience(long duration, TimeUnit units) {
             return add("slience()", () -> units.toMillis(duration), duration, units);
         }
@@ -77,29 +79,29 @@ public class Driver {
             this.port = port;
             return this;
         }
-        
+
         public Builder latencyAccumulator(Consumer<Long> consumer) {
             this.latencyAccumulator = consumer;
             return this;
         }
-        
+
         public Builder runtime(long duration, TimeUnit units) {
             this.runtimeSeconds = units.toNanos(duration);
             return this;
         }
-        
+
         public Builder add(String name, Supplier<Long> delaySupplier, long duration, TimeUnit units) {
             segments.add(new Segment() {
                 @Override
                 public long duration() {
                     return units.toNanos(duration);
                 }
-    
+
                 @Override
                 public long nextDelay() {
                     return delaySupplier.get();
                 }
-    
+
                 @Override
                 public String name() {
                     return name;
@@ -107,7 +109,7 @@ public class Driver {
             });
             return this;
         }
-        
+
         public Driver build() {
             return new Driver(this);
         }
@@ -129,13 +131,18 @@ public class Driver {
         metadata.put(ID_HEADER, builder.id);
 
         this.channel = ClientInterceptors.intercept(NettyChannelBuilder.forTarget("localhost:" + builder.port)
-                .usePlaintext(true)
-                .build(),
-                    MetadataUtils.newAttachHeadersInterceptor(metadata));
+                        .usePlaintext(true)
+                        .build(),
+                MetadataUtils.newAttachHeadersInterceptor(metadata));
     }
 
-    public int getAndResetSuccessCount() { return successCounter.getAndSet(0); }
-    public int getAndResetDropCount() { return dropCounter.getAndSet(0); }
+    public int getAndResetSuccessCount() {
+        return successCounter.getAndSet(0);
+    }
+
+    public int getAndResetDropCount() {
+        return dropCounter.getAndSet(0);
+    }
 
     public CompletableFuture<Void> runAsync() {
         return CompletableFuture.runAsync(this::run, Executors.newSingleThreadExecutor());
@@ -151,11 +158,11 @@ public class Driver {
                     if (currentTime > endTime) {
                         return;
                     }
-                    
+
                     if (currentTime > segmentEndTime) {
                         break;
                     }
-                    
+
                     long startTime = System.nanoTime();
                     Uninterruptibles.sleepUninterruptibly(Math.max(0, segment.nextDelay()), TimeUnit.MILLISECONDS);
                     ClientCalls.asyncUnaryCall(channel.newCall(TestServer.METHOD_DESCRIPTOR, CallOptions.DEFAULT.withWaitForReady()), "request",
@@ -174,7 +181,7 @@ public class Driver {
                                     latencyAccumulator.accept(System.nanoTime() - startTime);
                                     successCounter.incrementAndGet();
                                 }
-                        });
+                            });
                 }
             }
         }

@@ -277,7 +277,7 @@ public final class Gradient2Limit extends AbstractLimit {
 
         // Don't grow the limit if we are app limited
         if (inflight < estimatedLimit / 2) {
-            return (int) estimatedLimit;
+            return (int)estimatedLimit;
         }
 
         // Rtt could be higher than rtt_noload because of smoothing rtt noload updates

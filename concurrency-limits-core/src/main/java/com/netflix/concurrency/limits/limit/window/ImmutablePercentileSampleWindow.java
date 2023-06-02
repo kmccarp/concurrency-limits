@@ -43,7 +43,7 @@ class ImmutablePercentileSampleWindow implements SampleWindow {
             AtomicLongArray observedRtts,
             int sampleCount,
             double percentile
-    ) {
+        ) {
         this.minRtt = minRtt;
         this.maxInFlight = maxInFlight;
         this.didDrop = didDrop;
@@ -84,7 +84,7 @@ class ImmutablePercentileSampleWindow implements SampleWindow {
         }
         Arrays.sort(copyOfObservedRtts);
 
-        int rttIndex = (int) Math.round(sampleCount * percentile);
+        int rttIndex = (int)Math.round(sampleCount * percentile);
         int zeroBasedRttIndex = rttIndex - 1;
         return copyOfObservedRtts[zeroBasedRttIndex];
     }

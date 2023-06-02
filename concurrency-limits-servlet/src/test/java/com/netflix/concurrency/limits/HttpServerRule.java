@@ -18,17 +18,17 @@ import org.junit.rules.ExternalResource;
 public class HttpServerRule extends ExternalResource {
     private Server server;
     private final Consumer<ServletContextHandler> customizer;
-    
+
     public HttpServerRule(Consumer<ServletContextHandler> customizer) {
         this.customizer = customizer;
     }
-    
+
     protected void before() throws Throwable {
         this.server = new Server(0);
-        
+
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
-        
+
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         customizer.accept(context);
@@ -48,14 +48,14 @@ public class HttpServerRule extends ExternalResource {
             }
         }
     }
-    
+
     public int getPort() {
         return ((ServerConnector)server.getConnectors()[0]).getLocalPort();
     }
-    
+
     public String get(String path) throws Exception {
         URL url = new URL("http://localhost:" + getPort() + path);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
         con.setRequestMethod("GET");
         int responseCode = con.getResponseCode();
         if (responseCode != 200) {
@@ -64,7 +64,7 @@ public class HttpServerRule extends ExternalResource {
             return readString(con.getInputStream());
         }
     }
-    
+
     public String readString(InputStream is) throws IOException {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(is))) {
             return buffer.lines().collect(Collectors.joining("\n"));

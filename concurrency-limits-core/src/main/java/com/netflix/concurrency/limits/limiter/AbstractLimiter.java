@@ -122,7 +122,9 @@ public abstract class AbstractLimiter<ContextT> implements Limiter<ContextT> {
         return limit;
     }
 
-    public int getInflight() { return inFlight.get(); }
+    public int getInflight() {
+        return inFlight.get();
+    }
 
     protected void onNewLimit(int newLimit) {
         limit = newLimit;

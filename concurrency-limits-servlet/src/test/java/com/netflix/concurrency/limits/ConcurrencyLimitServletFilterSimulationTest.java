@@ -28,7 +28,7 @@ public class ConcurrencyLimitServletFilterSimulationTest {
     @ClassRule
     public static HttpServerRule server = new HttpServerRule(context -> {
         context.addServlet(HelloServlet.class, "/");
-        
+
         Limiter<HttpServletRequest> limiter = new ServletLimiterBuilder()
                 .limit(FixedLimit.of(10))
                 .partitionByUserPrincipal(Principal::getName)
@@ -38,10 +38,10 @@ public class ConcurrencyLimitServletFilterSimulationTest {
 
         FilterHolder holder = new FilterHolder();
         holder.setFilter(new ConcurrencyLimitServletFilter(limiter));
-        
+
         context.addFilter(holder, "/*", EnumSet.of(DispatcherType.REQUEST));
     });
-    
+
     @Test
     @Ignore
     public void simulation() throws Exception {
@@ -50,12 +50,12 @@ public class ConcurrencyLimitServletFilterSimulationTest {
                 SimpleLimiter.newBuilder().limit(limit).build());
         AtomicInteger errors = new AtomicInteger();
         AtomicInteger success = new AtomicInteger();
-        
+
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             System.out.println(String.format("errors=%d success=%d limit=%s", errors.getAndSet(0), success.getAndSet(0), limit));
         }, 1, 1, TimeUnit.SECONDS);
-        
-        
+
+
         while (true) {
             executor.execute(() -> {
                 try {
@@ -68,12 +68,12 @@ public class ConcurrencyLimitServletFilterSimulationTest {
             });
         }
     }
-    
+
     public static class HelloServlet extends HttpServlet {
         private static final long serialVersionUID = 1L;
 
         @Override
-        protected void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException {
+        protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
             } catch (InterruptedException e) {

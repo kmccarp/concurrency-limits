@@ -79,7 +79,7 @@ public class ConcurrencyLimitServletFilterTest {
 
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilter(new MockHttpServletRequest(), response,  new MockFilterChain());
+        filter.doFilter(new MockHttpServletRequest(), response, new MockFilterChain());
 
         assertEquals(customThrottleStatus, response.getStatus(), "custom status should be respected");
     }

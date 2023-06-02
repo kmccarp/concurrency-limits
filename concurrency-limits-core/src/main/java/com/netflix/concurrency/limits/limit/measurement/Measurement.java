@@ -27,12 +27,12 @@ public interface Measurement {
      * @return True if internal state was updated
      */
     Number add(Number sample);
-    
+
     /**
      * @return Return the current value
      */
     Number get();
-    
+
     /**
      * Reset the internal state as if no samples were ever added
      */

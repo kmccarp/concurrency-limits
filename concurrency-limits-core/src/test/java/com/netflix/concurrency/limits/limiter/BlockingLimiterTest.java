@@ -26,18 +26,18 @@ public class BlockingLimiterTest {
     public void test() {
         SettableLimit limit = SettableLimit.startingAt(10);
         BlockingLimiter<Void> limiter = BlockingLimiter.wrap(SimpleLimiter.newBuilder().limit(limit).build());
-        
+
         LinkedList<Limiter.Listener> listeners = new LinkedList<>();
         for (int i = 0; i < 10; i++) {
             limiter.acquire(null).ifPresent(listeners::add);
         }
-        
+
         limit.setLimit(1);
-        
+
         while (!listeners.isEmpty()) {
             listeners.remove().onSuccess();
         }
-        
+
         limiter.acquire(null);
     }
 
@@ -76,7 +76,7 @@ public class BlockingLimiterTest {
         assertTrue("Delay was " + delay.toMillis() + " millis", delay.compareTo(timeout) >= 0);
     }
 
-    @Test(expected=TimeoutException.class)
+    @Test(expected = TimeoutException.class)
     public void testNoTimeout() throws InterruptedException, ExecutionException, TimeoutException {
         SettableLimit limit = SettableLimit.startingAt(1);
         BlockingLimiter<Void> limiter = BlockingLimiter.wrap(SimpleLimiter.newBuilder().limit(limit).build());

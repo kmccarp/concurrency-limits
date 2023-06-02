@@ -27,12 +27,12 @@ import com.netflix.spectator.api.patterns.PolledMeter;
 public final class SpectatorMetricRegistry implements MetricRegistry {
     private final Registry registry;
     private final Id baseId;
-    
+
     public SpectatorMetricRegistry(Registry registry, Id baseId) {
         this.registry = registry;
         this.baseId = baseId;
     }
-    
+
     @Override
     public SampleListener distribution(String id, String... tagNameValuePairs) {
         DistributionSummary summary = registry.distributionSummary(suffixBaseId(id).withTags(tagNameValuePairs));
@@ -43,10 +43,10 @@ public final class SpectatorMetricRegistry implements MetricRegistry {
     public void gauge(String id, Supplier<Number> supplier, String... tagNameValuePairs) {
         Id metricId = suffixBaseId(id).withTags(tagNameValuePairs);
         PolledMeter.remove(registry, metricId);
-        
+
         PolledMeter.using(registry)
-            .withId(metricId)
-            .monitorValue(supplier, ignore -> supplier.get().doubleValue());
+                .withId(metricId)
+                .monitorValue(supplier, ignore -> supplier.get().doubleValue());
     }
 
     @Override

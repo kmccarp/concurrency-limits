@@ -37,14 +37,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ConcurrencyLimitClientInterceptor implements ClientInterceptor {
     private static final Status LIMIT_EXCEEDED_STATUS = Status.UNAVAILABLE.withDescription("Client concurrency limit reached");
-    
+
     private final Limiter<GrpcClientRequestContext> grpcLimiter;
-    
+
     public ConcurrencyLimitClientInterceptor(final Limiter<GrpcClientRequestContext> grpcLimiter) {
         Preconditions.checkArgument(grpcLimiter != null, "GrpcLimiter cannot not be null");
         this.grpcLimiter = grpcLimiter;
     }
-    
+
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(final MethodDescriptor<ReqT, RespT> method,
             final CallOptions callOptions, final Channel next) {
@@ -65,7 +65,7 @@ public class ConcurrencyLimitClientInterceptor implements ClientInterceptor {
                     }
                 })
                 // Perform the operation and release the limiter once done.
-                .map(listener -> (ClientCall<ReqT, RespT>) new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+                .map(listener -> (ClientCall<ReqT, RespT>)new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
                             final AtomicBoolean done = new AtomicBoolean(false);
 
                             @Override
@@ -104,30 +104,30 @@ public class ConcurrencyLimitClientInterceptor implements ClientInterceptor {
                 )
                 .orElseGet(() -> new ClientCall<ReqT, RespT>() {
 
-                        private Listener<RespT> responseListener;
+                            private Listener<RespT> responseListener;
 
-                        @Override
-                        public void start(io.grpc.ClientCall.Listener<RespT> responseListener, Metadata headers) {
-                            this.responseListener = responseListener;
-                        }
+                            @Override
+                            public void start(io.grpc.ClientCall.Listener<RespT> responseListener, Metadata headers) {
+                                this.responseListener = responseListener;
+                            }
 
-                        @Override
-                        public void request(int numMessages) {
-                        }
+                            @Override
+                            public void request(int numMessages) {
+                            }
 
-                        @Override
-                        public void cancel(String message, Throwable cause) {
-                        }
+                            @Override
+                            public void cancel(String message, Throwable cause) {
+                            }
 
-                        @Override
-                        public void halfClose() {
-                            responseListener.onClose(LIMIT_EXCEEDED_STATUS, new Metadata());
-                        }
+                            @Override
+                            public void halfClose() {
+                                responseListener.onClose(LIMIT_EXCEEDED_STATUS, new Metadata());
+                            }
 
-                        @Override
-                        public void sendMessage(ReqT message) {
+                            @Override
+                            public void sendMessage(ReqT message) {
+                            }
                         }
-                    }
                 );
     }
 }

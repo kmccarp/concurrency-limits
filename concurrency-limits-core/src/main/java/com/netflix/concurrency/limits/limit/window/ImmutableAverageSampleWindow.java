@@ -23,7 +23,7 @@ class ImmutableAverageSampleWindow implements SampleWindow {
     private final int maxInFlight;
     private final int sampleCount;
     private final boolean didDrop;
-    
+
     ImmutableAverageSampleWindow() {
         this.minRtt = Long.MAX_VALUE;
         this.sum = 0;

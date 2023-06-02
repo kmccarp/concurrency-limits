@@ -156,11 +156,11 @@ public class LifoBlockingLimiterTest {
 
         // Make sure all requests finished
         futures.forEach(future -> {
-                    try {
-                        future.get();
-                    } catch (Exception e) {
-                    }
-                });
+            try {
+                future.get();
+            } catch (Exception e) {
+            }
+        });
 
         // Verify that results are in reverse order
         Assert.assertEquals(Arrays.asList(4, 3, 2, 1, 0), values);
@@ -172,9 +172,9 @@ public class LifoBlockingLimiterTest {
     public void timeoutAcquireRaceCondition() throws InterruptedException, ExecutionException {
         // a limiter with a short timeout, and large backlog (we don't want it to hit that limit)
         LifoBlockingLimiter<Void> limiter = LifoBlockingLimiter.newBuilder(simpleLimiter)
-            .backlogSize(1000)
-            .backlogTimeout(10, TimeUnit.MILLISECONDS)
-            .build();
+                .backlogSize(1000)
+                .backlogTimeout(10, TimeUnit.MILLISECONDS)
+                .build();
 
         // acquire all except one token
         acquireN(limiter, 3);

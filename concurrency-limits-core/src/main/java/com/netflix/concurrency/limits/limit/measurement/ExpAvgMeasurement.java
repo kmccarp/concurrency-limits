@@ -39,7 +39,7 @@ public class ExpAvgMeasurement implements Measurement {
             value = sum / count;
         } else {
             double factor = factor(window);
-            value = value * (1-factor) + sample.doubleValue() * factor;
+            value = value * (1 - factor) + sample.doubleValue() * factor;
         }
         return value;
     }

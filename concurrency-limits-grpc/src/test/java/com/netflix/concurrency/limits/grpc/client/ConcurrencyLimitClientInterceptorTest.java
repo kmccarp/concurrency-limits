@@ -30,44 +30,44 @@ public class ConcurrencyLimitClientInterceptorTest {
             .setRequestMarshaller(StringMarshaller.INSTANCE)
             .setResponseMarshaller(StringMarshaller.INSTANCE)
             .build();
-    
+
     @Test
     @Ignore
     public void simulation() throws IOException {
         Semaphore sem = new Semaphore(20, true);
         Server server = NettyServerBuilder.forPort(0)
-            .addService(ServerServiceDefinition.builder("service")
-                    .addMethod(METHOD_DESCRIPTOR, ServerCalls.asyncUnaryCall((req, observer) -> {
-                        try {
-                            sem.acquire();
-                            TimeUnit.MILLISECONDS.sleep(100);
-                        } catch (InterruptedException e) {
-                        } finally {
-                            sem.release();
-                        }
-                        
-                        observer.onNext("response");
-                        observer.onCompleted();
-                    }))
-                    .build())
-            .build()
-            .start();
-        
+                .addService(ServerServiceDefinition.builder("service")
+                        .addMethod(METHOD_DESCRIPTOR, ServerCalls.asyncUnaryCall((req, observer) -> {
+                            try {
+                                sem.acquire();
+                                TimeUnit.MILLISECONDS.sleep(100);
+                            } catch (InterruptedException e) {
+                            } finally {
+                                sem.release();
+                            }
+
+                            observer.onNext("response");
+                            observer.onCompleted();
+                        }))
+                        .build())
+                .build()
+                .start();
+
         Limiter<GrpcClientRequestContext> limiter = new GrpcClientLimiterBuilder()
                 .blockOnLimit(true)
                 .build();
-        
+
         Channel channel = NettyChannelBuilder.forTarget("localhost:" + server.getPort())
                 .usePlaintext(true)
                 .intercept(new ConcurrencyLimitClientInterceptor(limiter))
                 .build();
-        
+
         AtomicLong counter = new AtomicLong();
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             System.out.println(" " + counter.getAndSet(0) + " : " + limiter.toString());
         }, 1, 1, TimeUnit.SECONDS);
-        
-        for (int i = 0 ; i < 10000000; i++) {
+
+        for (int i = 0; i < 10000000; i++) {
             counter.incrementAndGet();
             ClientCalls.futureUnaryCall(channel.newCall(METHOD_DESCRIPTOR, CallOptions.DEFAULT), "request");
         }
