@@ -48,7 +48,7 @@ public class ConcurrencyLimitServerInterceptorTest {
             .setResponseMarshaller(StringMarshaller.INSTANCE)
             .build();
 
-    private DefaultRegistry registry = new DefaultRegistry();
+    private final DefaultRegistry registry = new DefaultRegistry();
 
     private Server server;
     private Channel channel;
